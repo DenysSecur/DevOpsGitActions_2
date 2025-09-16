@@ -2,7 +2,7 @@
 name: CI-CD-Pipeline-to-AWS-ElasticBeastalk
 
 env:
-  EB_PACKAGE_S3_BUCKET_NAME : "adv-it-flask-application-packages"
+  EB_PACKAGE_S3_BUCKET_NAME : "denys-flask-application-packages"
   EB_APPLICATION_NAME : "MyFlask"
   EB_ENVIRONMENT_NAME : "MyFlask-env"
   DEPLOY_PACKAGE_NAME : "flask_app_${{github.sha}}.zip"
@@ -21,3 +21,18 @@ jobs:
         
       - name: Create ZIP deployment package
         run : zip -r $env.DEPLOY_PACKAGE_NAME ./ -x *.git*
+      
+      - name: Configure my AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with: 
+          aws-access-key-id : ${{ secrets.MY_AWS_ACCESS }}
+          aws-secret-key-id : ${{ envsecrets.MY_AWS_SECRETS }}
+          aws-region        : ${{ env.AWS_REGION_NAME }}
+
+      - name: Copy Deployment package to S3 bucket      
+        run:  aws s3 cp ${{ env.DEPLOY_PACKAGE_NAME }}  s3://${{ env.EB_PACKAGE_S3_BUCKET_NAME }}/
+
+      - name : Print Heppy  Messaage for CI finish
+        run: echo "CI Pipeline part finished successfuly!!!!!"
+
+        
